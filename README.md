@@ -47,7 +47,7 @@ Maktaba-UI is a simple Next.js application that serves as the frontend for the [
 - Ensure you have [Node.js](https://nodejs.org/) installed.
 
 ### Backend Setup
-1. Clone the Maktaba backend repository:
+1. Clone the [Maktaba](https://github.com/kennmwai/maktaba) backend repository:
    ```bash
    git clone https://github.com/kennmwai/maktaba.git
    cd maktaba
