@@ -1,9 +1,9 @@
 # Maktaba-UI
 
-Maktaba-UI is a simple Next.js application that serves as the frontend for the [Maktaba](https://github.com/kennmwai/maktaba) online library. This application interacts with the [Maktaba](https://github.com/kennmwai/maktaba)  backend API to provide users with a seamless experience for browsing books and accessing AI-generated insights.
+Maktaba-UI is a simple Next.js application that serves as the frontend for the [Maktaba](https://github.com/kennmwai/maktaba) online library. This application interacts with the [Maktaba](https://github.com/kennmwai/maktaba) backend API to provide users with a seamless experience for browsing books and accessing AI-generated insights.
 
 ## Table of Contents
-- [UI Requirements](#ui-requirements)
+- [Features](#features)
 - [API Integration](#api-integration)
 - [UI/UX Considerations](#uiux-considerations)
 - [Build and Run Instructions](#build-and-run-instructions)
@@ -13,33 +13,41 @@ Maktaba-UI is a simple Next.js application that serves as the frontend for the [
 - [License](#license)
 - [Contact](#contact)
 
-## UI Requirements
+## Features
 
 ### Home / Books List Page
-- **Display a list of all books retrieved from the backend API (GET /books).**
+- **Displays a list of all books retrieved from the backend API (GET /books).**
 - Each book item displays key details (e.g., title, author, publication year).
 - Users can click on a book to view more details.
 
 ### Book Details Page
-- **Show detailed information about a selected book by calling GET /books/{id}.**
-- Provide a button or link to request AI insights for the book.
+- **Shows detailed information about a selected book by calling GET /books/{id}.**
+- Provides a button or link to request AI insights for the book.
 
 ### AI Insights Feature
-- **When the user clicks to get AI insights, call the GET /books/{id}/aiinsights endpoint.**
-- Display the AI-generated tagline or summary alongside the book details.
-- Handle loading states and potential errors from the API call gracefully.
+- **When the user clicks to get AI insights, calls the GET /books/{id}/ai-insights endpoint.**
+- Displays the AI-generated tagline or summary alongside the book details.
+- Handles loading states and potential errors from the API call gracefully.
 
-### Search Functionality (Optional)
-- **Add a search input on the Home page to allow users to filter books by title or author using the GET /books/search endpoint.**
+### Search Functionality
+- A search input is provided on the Home page, allowing users to filter books by title or author using the GET /books/search endpoint.
 
 ## API Integration
-- **Use Next.js’s data fetching methods (e.g., getServerSideProps, getStaticProps, or client-side fetching with useEffect) to communicate with the Spring Boot API.**
-- Ensure the Next.js application can correctly handle API responses, including error states.
+- Utilizes Next.js’s data fetching methods (e.g., client-side fetching with useEffect) to communicate with the Spring Boot API.
+- Ensures the Next.js application correctly handles API responses, including error states.
+
+### API Routes
+- **GET /books**: Fetches a list of all books from the backend API.
+- **GET /books/{id}**: Fetches detailed information about a selected book.
+- **GET /books/{id}/ai-insights**: Fetches AI-generated insights for a selected book.
+- **GET /books/search**: Searches for books by title or author.
+
+These API routes are integrated into the Next.js application using server-side functions that handle requests and responses, ensuring smooth communication with the backend.
 
 ## UI/UX Considerations
-- **Keep the UI simple and focused on functionality.**
-- Use any styling solution you prefer (e.g., CSS modules, styled-components, Tailwind CSS).
-- Ensure the application is responsive and provides clear user feedback (e.g., loading spinners, error messages).
+- The UI is designed to be simple and focused on functionality.
+- Uses styling solutions such as CSS modules, styled-components, and Tailwind CSS.
+- Ensures the application is responsive and provides clear user feedback (e.g., loading spinners, error messages).
 
 ## Build and Run Instructions
 
@@ -60,7 +68,7 @@ Maktaba-UI is a simple Next.js application that serves as the frontend for the [
    ```
 
 ### Frontend Setup
-1. Clone the Maktaba-UI repository:
+1. Clone the [Maktaba UI](https://github.com/kennmwai/maktaba-ui) repository:
    ```bash
    git clone https://github.com/kennmwai/maktaba-ui.git
    cd maktaba-ui
@@ -86,12 +94,10 @@ Maktaba-UI is a simple Next.js application that serves as the frontend for the [
   ```
 
 ## Design Decisions
-- **Next.js**: Chosen for its simplicity and built-in features for server-side rendering.
+- **Next.js**: Chosen for its simplicity and built-in features.
 - **Tailwind CSS**: Used for styling to keep styles scoped to components.
-- **Axios**: Used for making HTTP requests to the backend API.
 - **React Hook Form**: Used for managing form state and validation.
 - **Zod**: Used for schema validation with React Hook Form.
-- **React Query**: Used for data fetching and caching.
 
 ## Contributing
 Contributions are welcome! Please open an issue or submit a pull request.
