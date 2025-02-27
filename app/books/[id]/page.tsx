@@ -6,6 +6,7 @@ import type { Book, Insights } from "@/types"
 import { ArrowLeft, Barcode , BookIcon, Calendar, User, Sparkles } from "lucide-react"
 import { toast } from 'sonner';
 import Image from 'next/image';
+import RecentlyViewed from "@/components/RecentlyViewed";
 
 export default function BookDetails() {
   const { id } = useParams()
@@ -20,6 +21,22 @@ export default function BookDetails() {
     fetchBookDetails()
   }, [])
 
+  const [recentlyViewedBooks, setRecentlyViewedBooks] = useState<Book[]>([])
+
+  const updateRecentlyViewed = (book: Book) => {
+    const MAX_ITEMS = 5;
+    const storedItems = localStorage.getItem('recentlyViewedBooks');
+    let items: Book[] = storedItems ? JSON.parse(storedItems) : [];
+
+    // Remove duplicates and limit to max items
+    items = items.filter(item => item.id !== book.id);
+    items.unshift(book);
+    items = items.slice(0, MAX_ITEMS);
+
+    localStorage.setItem('recentlyViewedBooks', JSON.stringify(items));
+    setRecentlyViewedBooks(items.filter(b => b.id !== book.id)); // Exclude current book
+  }
+
   const fetchBookDetails = async () => {
     try {
       const response = await fetch(`/api/books/${id}`)
@@ -28,12 +45,20 @@ export default function BookDetails() {
       }
       const data: Book  = await response.json()
       setBook(data)
+      updateRecentlyViewed(data);
       setLoading(false)
     } catch (err) {
       setError("Error fetching book details. Please try again later.")
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    const storedItems = localStorage.getItem('recentlyViewedBooks');
+    if (storedItems) {
+      setRecentlyViewedBooks(JSON.parse(storedItems));
+    }
+  }, []);
 
   const fetchAiInsights = async () => {
     const loadingToastId = toast.loading('Fetching AI insights...')
@@ -176,6 +201,7 @@ export default function BookDetails() {
           </div>
         </div>
       </div>
+       <RecentlyViewed books={recentlyViewedBooks} />
     </div>
   );
 }
