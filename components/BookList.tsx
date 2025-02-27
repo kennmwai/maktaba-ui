@@ -1,100 +1,128 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import Link from "next/link"
 import type { Book } from "@/types"
-import { Barcode, BookIcon, Calendar, User} from "lucide-react"
-import BookSkeleton from '@/components/BookSkeleton';
-
+import BookSkeleton from '@/components/BookSkeleton'
+import BookCard from '@/components/BookCard'
+import Pagination from '@/components/Pagination'
+import PageControls from '@/components/PageControls'
+import ErrorDisplay from '@/components/ErrorDisplay'
 
 export default function BookList() {
   const [books, setBooks] = useState<Book[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    fetchBooks()
-  }, [])
+  // Pagination and sorting state
+  const [currentPage, setCurrentPage] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
+  const [totalItems, setTotalItems] = useState(0)
+  const [pageSize, setPageSize] = useState(10)
+  const [sortBy, setSortBy] = useState("title,asc")
 
-  const fetchBooks = async () => {
+  useEffect(() => {
+    fetchBooks(currentPage, pageSize, sortBy)
+  }, [currentPage, pageSize, sortBy])
+
+  const fetchBooks = async (page: number, size: number, sort: string) => {
     try {
-      const response = await fetch("/api/books")
+      setLoading(true)
+      const response = await fetch(`/api/books?page=${page}&size=${size}&sort=${sort}`, {
+        cache: 'no-store'
+      })
+
       if (!response.ok) {
         throw new Error("Failed to fetch books")
       }
+
       const data = await response.json()
-      setBooks(data)
+
+      if (data && Array.isArray(data.content)) {
+        setBooks(data.content)
+        setTotalPages(data.totalPages)
+        setTotalItems(data.totalElements)
+      } else if (Array.isArray(data)) {
+        setBooks(data)
+        // If the API doesn't return pagination info, make a best guess
+        setTotalItems(data.length)
+        setTotalPages(Math.ceil(data.length / pageSize))
+      } else {
+        setBooks([])
+        setError("Invalid data format received from API")
+        console.error("Expected array but got:", data)
+      }
+
       setLoading(false)
     } catch (err) {
+      console.error("Fetch error:", err)
       setError("Error fetching books. Please try again later.")
       setLoading(false)
     }
   }
 
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 0 && newPage < totalPages) {
+      setCurrentPage(newPage)
+    }
+  }
+
+  const handlePageSizeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const newSize = parseInt(event.target.value)
+    setPageSize(newSize)
+    setCurrentPage(0) // Reset to first page when changing page size
+  }
+
+  const handleSortChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSortBy(event.target.value)
+    setCurrentPage(0) // Reset to first page when changing sort
+  }
+
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {[...Array(9)].map((_, index) => (
-          <BookSkeleton key={index} />
-        ))}
+      <div className="space-y-6">
+        <PageControls
+          itemCount={0}
+          totalItems={totalItems}
+          pageSize={pageSize}
+          onPageSizeChange={handlePageSizeChange}
+          sortBy={sortBy}
+          onSortChange={handleSortChange}
+        />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(pageSize > 6 ? 6 : pageSize)].map((_, index) => (
+            <BookSkeleton key={index} />
+          ))}
+        </div>
       </div>
     )
   }
 
   if (error) {
-    return (
-      <div className="alert alert-error shadow-lg max-w-md mx-auto">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="stroke-current shrink-0 h-6 w-6"
-          fill="none"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
-        <span>{error}</span>
-      </div>
-    )
+    return <ErrorDisplay message={error} />
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {books.map((book) => (
-        <Link
-          href={`/books/${book.id}`}
-          key={book.id}
-          className="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1"
-        >
-          <div className="card-body">
-            <div className="flex items-start justify-between">
-              <h2 className="card-title text-lg font-bold line-clamp-2">{book.title}</h2>
-              <BookIcon className="h-5 w-5 text-primary shrink-0" />
-            </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2">
-              <User className="h-4 w-4" />
-              <span>{book.author}</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Calendar className="h-4 w-4" />
-              <span>{book.publicationYear}</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Barcode className="h-4 w-4" />
-              <span>{book.isbn}</span>
-            </div>
-            {book.description && <p className="mt-2 text-sm line-clamp-2 text-muted-foreground">{book.description}</p>}
-            <div className="card-actions justify-end mt-4">
-              <button className="btn btn-primary btn-sm">View Details</button>
-            </div>
-          </div>
-        </Link>
-      ))}
+    <div className="space-y-6">
+      <PageControls
+        itemCount={books.length}
+        totalItems={totalItems}
+        pageSize={pageSize}
+        onPageSizeChange={handlePageSizeChange}
+        sortBy={sortBy}
+        onSortChange={handleSortChange}
+      />
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {books.map((book) => (
+          <BookCard key={book.id} book={book} />
+        ))}
+      </div>
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+      />
     </div>
   )
 }
-

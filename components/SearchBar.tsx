@@ -8,7 +8,7 @@ import { Search } from "lucide-react"
 export default function SearchBar() {
   const [query, setQuery] = useState("")
   const [searchBy, setSearchBy] = useState<{ title: boolean; author: boolean; isbn: boolean }>({
-    title: true,
+    title: false,
     author: false,
     isbn: false,
   })
